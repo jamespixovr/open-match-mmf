@@ -1,5 +1,6 @@
 # Gather dependencies and build the executable
 FROM golang:1.19.4 as builder
+ENV GO111MODULE=on
 
 WORKDIR /app
 

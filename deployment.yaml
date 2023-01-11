@@ -1,0 +1,37 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pixo-matchfunction
+  namespace: default
+  labels:
+    app: pixo-matchfunction
+    component: matchfunction
+spec:
+  containers:
+    - name: game-matchfunction
+      image: jarmex/open-match-mmf:latest
+      imagePullPolicy: Always
+      ports:
+        - name: grpc
+          containerPort: 50502
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: pixo-matchfunction
+  namespace: default
+  labels:
+    app: pixo-matchfunction
+    component: matchfunction
+spec:
+  selector:
+    app: pixo-matchfunction
+    component: matchfunction
+  clusterIP: None
+  type: ClusterIP
+  ports:
+    - name: grpc
+      protocol: TCP
+      port: 50502
+---

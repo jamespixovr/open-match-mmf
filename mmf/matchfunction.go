@@ -16,7 +16,7 @@ var logger = runtime.NewLoggerWithSource("mmf")
 // a Match Proposal. It continues to generate proposals till one of the pools
 // runs out of Tickets.
 const (
-	matchName              = "basic-matchfunction"
+	matchName              = "pixo-matchfunction"
 	ticketsPerPoolPerMatch = 2
 )
 
