@@ -17,19 +17,20 @@ var logger = runtime.NewLoggerWithSource("mmf")
 // runs out of Tickets.
 const (
 	matchName              = "pixo-matchfunction"
-	ticketsPerPoolPerMatch = 2
+	ticketsPerPoolPerMatch = 1
 )
 
 // Run is this match function's implementation of the gRPC call defined in api/matchfunction.proto.
 func (s *MatchFunctionService) Run(req *pb.RunRequest, stream pb.MatchFunction_RunServer) error {
 	// Fetch tickets for the pools specified in the Match Profile.
-	logger.Info("Generating proposals for function %v", req.GetProfile().GetName())
+	logger.Debugf("Generating proposals for function %s", req.GetProfile().GetName())
 
 	poolTickets, err := matchfunction.QueryPools(stream.Context(), s.queryServiceClient, req.GetProfile().GetPools())
 	if err != nil {
 		logger.WithError(err).Error("Failed to query tickets for the given pools")
 		return err
 	}
+	// logger.Info(poolTickets)
 
 	// Generate proposals.
 	proposals, err := makeMatches(req.GetProfile(), poolTickets)
@@ -51,6 +52,11 @@ func (s *MatchFunctionService) Run(req *pb.RunRequest, stream pb.MatchFunction_R
 }
 
 func makeMatches(p *pb.MatchProfile, poolTickets map[string][]*pb.Ticket) ([]*pb.Match, error) {
+	// tickets, ok := poolTickets["everyone"]// filter by only the  name everyone -> from director
+	// if !ok {
+	// 	return nil, errors.New("Expected pool named everyone.") // this to be changed
+	// }
+
 	var matches []*pb.Match
 	count := 0
 	for {
@@ -62,13 +68,13 @@ func makeMatches(p *pb.MatchProfile, poolTickets map[string][]*pb.Ticket) ([]*pb
 				insufficientTickets = true
 				break
 			}
-
 			// Remove the Tickets from this pool and add to the match proposal.
 			matchTickets = append(matchTickets, tickets[0:ticketsPerPoolPerMatch]...)
 			poolTickets[pool] = tickets[ticketsPerPoolPerMatch:]
 		}
 
 		if insufficientTickets {
+			logger.Debug("There is no sufficient tickets to pair")
 			break
 		}
 
